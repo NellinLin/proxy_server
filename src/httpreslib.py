@@ -3,6 +3,8 @@ from urllib import parse
 import urllib.request
 # import http.client
 
+file_path = './src/logs.txt'
+
 status_types = {
     '200': 'OK',
     '403': 'Forbidden',
@@ -35,9 +37,20 @@ class HttpResponse:
                    '\n'
         return response.encode()
 
-    def create_response(self, client_socket):
-        request_first_line = self.request.split('\r\n')[0].split(' ')
+    def write_request(self):
+        try:
+            file = open(file_path, 'ab+')
+        except FileNotFoundError:
+            exit('Config file {} is not found'.format(file_path))
 
+        file.write('REQUEST\r\n'.encode())
+        file.write(self.request.encode())
+        file.close()
+
+    def create_response(self, client_socket):
+        self.write_request()
+
+        request_first_line = self.request.split('\r\n')[0].split(' ')
         request_method = request_first_line[0]
         if not (request_method == 'GET' or request_method == 'HEAD'):
             return self.response_with_error(405)
@@ -47,3 +60,6 @@ class HttpResponse:
         response_for_http = urllib.request.urlopen(self.request_path)
         client_socket.sendall(response_for_http.read())
         client_socket.close()
+
+    def burb_repeater(self):
+        print('hi!')

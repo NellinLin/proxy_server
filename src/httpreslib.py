@@ -1,6 +1,7 @@
 from datetime import datetime
 from urllib import parse
-import http.client
+import urllib.request
+# import http.client
 
 status_types = {
     '200': 'OK',
@@ -34,29 +35,15 @@ class HttpResponse:
                    '\n'
         return response.encode()
 
-    def create_response(self):
+    def create_response(self, client_socket):
         request_first_line = self.request.split('\r\n')[0].split(' ')
 
         request_method = request_first_line[0]
         if not (request_method == 'GET' or request_method == 'HEAD'):
             return self.response_with_error(405)
 
-        self.request_path = parse.urlparse(parse.unquote(request_first_line[1]))
-        url_netloc = self.request_path.netloc
-        url_path = self.request_path.path
+        self.request_path = parse.unquote(request_first_line[1])
 
-        headers_lib = {}
-        for s in self.request.split('\r\n')[1:]:
-            header_split = s.split(': ')
-            if len(header_split) > 1:
-               headers_lib[header_split[0]] = header_split[1]
-
-        conn = http.client.HTTPConnection(url_netloc)
-        conn.request(request_method, url_path, headers=headers_lib)
-        response = conn.getresponse()
-
-        print("Status: {} and reason: {}".format(response.status, response.reason), response.headers)
-
-        new_response = response.read()
-        conn.close()
-        return new_response
+        response_for_http = urllib.request.urlopen(self.request_path)
+        client_socket.sendall(response_for_http.read())
+        client_socket.close()

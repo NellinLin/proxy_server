@@ -5,12 +5,9 @@ from src.readconf import read_config_file
 from multiprocessing import Process
 
 
-# HOST = ''
-# PORT = 80
 CONFIG_PATH = '/etc/httpd.conf'
-HOST = 'localhost'
+HOST = ''
 PORT = 6080
-# CONFIG_PATH = './src/httpd.conf'
 
 def worker(listen_socket, config_data):
     thread_pool = []

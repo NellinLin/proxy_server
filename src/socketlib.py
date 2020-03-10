@@ -20,6 +20,6 @@ def receive_message(sock):
     return message
 
 
-def response_message(request):
+def response_message(request, client_socket):
     response = HttpResponse(request)
-    return response.create_response()
+    return response.create_response(client_socket)

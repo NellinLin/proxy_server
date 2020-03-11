@@ -82,6 +82,3 @@ class HttpResponse:
         response_for_http = urllib.request.urlopen(self.request_path, data=data.encode())
         response = response_for_http.read()
         return response
-
-    def burb_repeater(self):
-        print('hi!')

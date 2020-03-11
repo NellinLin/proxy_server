@@ -1,6 +1,8 @@
 # proxy_server
 Задание: https://park.mail.ru/blog/topic/view/15225/
 
+Описание: реализовано проксирование http запросов
+
 ## Установка и запуск
 ```
 git clone https://github.com/NellinLin/proxy_server.git

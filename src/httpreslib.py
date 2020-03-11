@@ -9,7 +9,8 @@ status_types = {
     '200': 'OK',
     '403': 'Forbidden',
     '404': 'Not Found',
-    '405': 'Method Not Allowed'
+    '405': 'Method Not Allowed',
+    '409': 'Conflict'
 }
 
 
@@ -47,19 +48,40 @@ class HttpResponse:
         file.write(self.request.encode())
         file.close()
 
+    def get_data(self, request_list):
+        # flag = False
+        # output_list = []
+        # for elem in request_list:
+        #     if elem == '':
+        #         flag = True
+        #
+        #     if flag == True:
+        #         output_list.append(elem)
+        #
+        # if len(output_list) > 0:
+        #     return '\r\n'.join(output_list)
+        # return ''
+        return '\r\n'.join(request_list[1:])
+
+    def find_error(self, request):
+        if request.find('https://') != -1:
+            return self.response_with_error(409)
+        return ''
+
     def create_response(self, client_socket):
         self.write_request()
-
         request_first_line = self.request.split('\r\n')[0].split(' ')
-        request_method = request_first_line[0]
-        if not (request_method == 'GET' or request_method == 'HEAD'):
-            return self.response_with_error(405)
 
         self.request_path = parse.unquote(request_first_line[1])
+        data = self.get_data(self.request.split('\r\n'))
 
-        response_for_http = urllib.request.urlopen(self.request_path)
-        client_socket.sendall(response_for_http.read())
-        client_socket.close()
+        find_error = self.find_error(self.request_path)
+        if find_error != '':
+            return find_error
+
+        response_for_http = urllib.request.urlopen(self.request_path, data=data.encode())
+        response = response_for_http.read()
+        return response
 
     def burb_repeater(self):
         print('hi!')

@@ -68,7 +68,7 @@ class HttpResponse:
             return self.response_with_error(409)
         return ''
 
-    def create_response(self, client_socket):
+    def create_response(self):
         self.write_request()
         request_first_line = self.request.split('\r\n')[0].split(' ')
 

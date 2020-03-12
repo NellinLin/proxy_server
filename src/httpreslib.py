@@ -1,9 +1,9 @@
 from datetime import datetime
 from urllib import parse
 import urllib.request
-# import http.client
 
 file_path = './src/logs.txt'
+max_request_logs = 500
 
 status_types = {
     '200': 'OK',
@@ -39,28 +39,26 @@ class HttpResponse:
         return response.encode()
 
     def write_request(self):
-        try:
-            file = open(file_path, 'ab+')
-        except FileNotFoundError:
-            exit('Config file {} is not found'.format(file_path))
+        file = open('./src/logs.txt', 'rb+')
+        data = file.read().decode().split('REQUEST_LOG')[1:]
+        if len(data) == 0:
+            last_number = 0
+        else:
+            last_number = int(data[-1].split('\r\n')[0])
+        file.close()
 
-        file.write('REQUEST\r\n'.encode())
+        if last_number == max_request_logs:
+            args = 'wb+'
+            last_number = 0
+        else:
+            args = 'ab+'
+
+        file = open('./src/logs.txt', args)
+        file.write('REQUEST_LOG {}\r\n'.format(last_number + 1).encode())
         file.write(self.request.encode())
         file.close()
 
     def get_data(self, request_list):
-        # flag = False
-        # output_list = []
-        # for elem in request_list:
-        #     if elem == '':
-        #         flag = True
-        #
-        #     if flag == True:
-        #         output_list.append(elem)
-        #
-        # if len(output_list) > 0:
-        #     return '\r\n'.join(output_list)
-        # return ''
         return '\r\n'.join(request_list[1:])
 
     def find_error(self, request):
@@ -69,11 +67,12 @@ class HttpResponse:
         return ''
 
     def create_response(self):
+        request_split = self.request.split('\r\n')
         self.write_request()
-        request_first_line = self.request.split('\r\n')[0].split(' ')
 
+        request_first_line = request_split[0].split(' ')
         self.request_path = parse.unquote(request_first_line[1])
-        data = self.get_data(self.request.split('\r\n'))
+        data = self.get_data(request_split)
 
         find_error = self.find_error(self.request_path)
         if find_error != '':
